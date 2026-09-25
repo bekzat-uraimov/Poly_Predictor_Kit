@@ -1,3 +1,23 @@
+> **Note:** This is my fork of our team's hackathon project. We won the **Polymarket track at QuackHacks** (Nov 2025) with it.
+> Team: Raimbek Alish, Shamil Khamrayev, Umar Turdumambetov, Zhanbolot Eraliev, Akan Abdireshov and me.
+>
+> **What I built:** the comment collector ([`Emotional_Damage_Predictor/commentsReceiver.py`](Emotional_Damage_Predictor/commentsReceiver.py)). It takes a Polymarket event link, finds the event through the Gamma API, and pages through all of its comments. These comments are the data for the emotional vs rational classifier.
+
+### How it works
+
+```mermaid
+flowchart LR
+    E[Chrome extension] --> B[Flask backend]
+    B --> G[Polymarket Gamma API<br/>events, markets, comments]
+    B --> AI[Gemini<br/>market insight]
+    B --> C[TF-IDF + Logistic Regression<br/>emotional / rational / spam]
+    S[Snowflake<br/>model training] -.-> C
+    B --> R[Steamroller check<br/>risk vs reward]
+    B --> E
+```
+
+---
+
 # Poly Predictor Kit
 
 A Chrome Extension toolkit that analyzes Polymarket events using AI, ML, and simple risk models — all integrated into a Chrome Extension.
