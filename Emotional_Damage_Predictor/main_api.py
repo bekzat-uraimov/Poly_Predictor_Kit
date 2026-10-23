@@ -5,7 +5,7 @@ import json
 import math
 import os
 
-from commentsReceiver import getComments
+from commentsReceiver import fetch_comments, CommentFetchError
 from upload_to_snowflake import upload_training_data
 from train_model_snowflake import train_model
 
@@ -13,7 +13,6 @@ from train_model_snowflake import train_model
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-INPUT_PATH = os.path.join(BASE_DIR, "data.json")
 OUTPUT_PATH = os.path.join(BASE_DIR, "data_labeled.json")
 MODEL_PATH = os.path.join(BASE_DIR, "comment_classifier.pkl")
 
@@ -30,15 +29,16 @@ def analyze_event():
     event_url = data["url"]
     print("Received URL:", event_url)
 
-    # 1) Get comments for this event (make sure commentsReceiver writes to INPUT_PATH)
-    getComments(event_url)
+    # 1) Get comments for this event. They stay in memory, so two requests
+    #    at the same time can't overwrite each other's data.
+    try:
+        all_comments = fetch_comments(event_url)
+    except CommentFetchError as e:
+        return jsonify({"message": f"Could not load comments: {e}"}), 502
 
-    # 2) Load comments
-    if not os.path.exists(INPUT_PATH):
-        return jsonify({"message": "No comments file found after scraping."}), 500
-
-    with open(INPUT_PATH, "r", encoding="utf-8") as f:
-        all_comments = json.load(f)
+    # 2) Nothing to analyze
+    if not all_comments:
+        return jsonify({"message": "This event has no comments to analyze yet."})
 
     # 3) Load model from the same folder as this file
     if not os.path.exists(MODEL_PATH):
