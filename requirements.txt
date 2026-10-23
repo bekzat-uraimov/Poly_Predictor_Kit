@@ -1,3 +1,10 @@
 requests
 flask
+flask-cors
 python-dotenv
+scikit-learn
+joblib
+pandas
+snowflake-snowpark-python[pandas]
+google-genai
+pytest
